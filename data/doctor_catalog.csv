@@ -1,0 +1,22 @@
+doctor_name,specialization,department
+john doe,general_dentist,Dental
+emily johnson,cosmetic_dentist,Dental
+jane smith,prosthodontist,Dental
+sarah wilson,pediatric_dentist,Dental
+daniel miller,emergency_dentist,Dental
+michael green,oral_surgeon,Dental
+kevin anderson,orthodontist,Dental
+aarav gupta,general_physician,General Medicine
+pooja rao,pediatrician,Pediatrics
+nikhil sen,dermatologist,Dermatology
+david clark,cardiologist,Cardiology
+nancy hall,neurologist,Neurology
+paul adams,orthopedic,Orthopedics
+meera sharma,gynecologist,Women's Health
+amit verma,ent,ENT
+priya nair,ophthalmologist,Eye Care
+rahul menon,pulmonologist,Pulmonology
+neha kapoor,gastroenterologist,Gastroenterology
+arjun iyer,endocrinologist,Endocrinology
+fatima ali,psychiatrist,Mental Health
+vivek singh,urologist,Urology

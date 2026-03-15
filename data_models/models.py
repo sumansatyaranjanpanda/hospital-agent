@@ -1,4 +1,6 @@
 import re
+from typing import Any, Dict, List, Literal, Optional
+
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -26,3 +28,22 @@ class IdentificationNumberModel(BaseModel):
         if not re.match(r'^\d{7,8}$', str(v)):  # Convert to string before matching
             raise ValueError("The ID number should be a 7 or 8-digit number")
         return v
+
+
+class ToolResultModel(BaseModel):
+    action: str
+    status: Literal["success", "unavailable", "no_availability", "not_found", "needs_input", "info", "out_of_scope"]
+    message: str
+    doctor_name: Optional[str] = None
+    specialization: Optional[str] = None
+    department: Optional[str] = None
+    date: Optional[str] = None
+    time: Optional[str] = None
+    slot: Optional[str] = None
+    old_slot: Optional[str] = None
+    new_slot: Optional[str] = None
+    patient_id: Optional[int] = None
+    slots: Optional[List[str]] = None
+    doctors: Optional[List[Dict[str, Any]]] = None
+    alternatives: Optional[List[str]] = None
+    recommended_specializations: Optional[List[str]] = None
