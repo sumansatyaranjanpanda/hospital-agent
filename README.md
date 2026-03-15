@@ -1,14 +1,20 @@
 # Doctor Appointment System
 
-Hospital-style multi-agent appointment assistant built with:
-- FastAPI backend
-- Streamlit frontend
-- LangGraph / LangChain orchestration
-- CSV-based demo data for doctors, schedules, and patients
+Single-process Streamlit app for:
+- doctor recommendations
+- doctor availability checks
+- appointment booking
+- appointment rescheduling
+- appointment cancellation
+
+The app uses:
+- Streamlit UI
+- LangGraph / LangChain agent workflow
+- CSV demo data for schedules and patients
 
 ## Local Run
 
-Create environment and install dependencies:
+Create environment and install:
 
 ```bash
 conda create -p venv python=3.10 -y
@@ -16,76 +22,51 @@ conda activate ./venv
 pip install -r requirements.txt
 ```
 
-Start backend:
+Set your API key in `.env`:
 
-```bash
-uvicorn main:app --reload
+```env
+OPENAI_API_KEY=your_openai_api_key
 ```
 
-Start frontend:
+Run the app:
 
 ```bash
 streamlit run streamlit_ui.py
 ```
 
-## Deployment
+## Streamlit Community Cloud Deployment
 
-Recommended setup:
-- Streamlit frontend on Streamlit Community Cloud
-- FastAPI backend on Render, Railway, Fly.io, or similar
+This project now runs as a single Streamlit app. No separate FastAPI deployment is required.
 
-### 1. Deploy FastAPI backend
+### Streamlit Cloud settings
 
-This repo includes a [Procfile](/c:/Users/rajap/doctor-appoitment-multiagent/Procfile) with:
+- Repository: your GitHub repo
+- Branch: your deployment branch
+- Main file path: `streamlit_ui.py`
+- Python version: `3.10`
 
-```bash
-web: uvicorn main:app --host 0.0.0.0 --port $PORT
-```
+### Streamlit Cloud secrets
 
-Backend environment variables:
-
-```bash
-OPENAI_API_KEY=your_key_here
-```
-
-### 2. Deploy Streamlit frontend
-
-The frontend reads the backend URL from `API_URL`:
-
-```python
-API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
-```
-
-Set this in Streamlit Cloud secrets:
+Add this in the app `Secrets` section:
 
 ```toml
-API_URL="https://your-backend-url"
+OPENAI_API_KEY="your_openai_api_key"
 ```
 
-Then deploy `streamlit_ui.py` as the Streamlit entry file.
+The app automatically reads `OPENAI_API_KEY` from:
+1. Streamlit secrets
+2. `.env` locally
 
-### 3. Streamlit Cloud steps
+## Optional FastAPI Wrapper
 
-1. Push this repo to GitHub.
-2. Open Streamlit Community Cloud.
-3. Create a new app from the repo.
-4. Select:
-   - Branch: your deployment branch
-   - Main file path: `streamlit_ui.py`
-5. Add secret:
-
-```toml
-API_URL="https://your-backend-url"
-```
+If you still want an HTTP API, `main.py` remains available as a thin wrapper around the same shared service logic.
 
 ## Important Note
 
-This project currently stores bookings and patient registrations in CSV files:
+This project still stores bookings and patient registrations in CSV files:
 - [data/doctor_availability.csv](/c:/Users/rajap/doctor-appoitment-multiagent/data/doctor_availability.csv)
 - [data/patients.csv](/c:/Users/rajap/doctor-appoitment-multiagent/data/patients.csv)
 
-That is fine for demo use, but on many cloud platforms file changes may not persist across restarts or redeploys.
+That is fine for demo use, but changes may not persist across restarts on some cloud platforms.
 
-For a more reliable deployment, move these to:
-- SQLite for simple persistence
-- Postgres for production
+For stronger persistence, move the data layer to SQLite or Postgres.

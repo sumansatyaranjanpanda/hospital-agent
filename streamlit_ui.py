@@ -1,11 +1,13 @@
 import os
 
-import requests
 import streamlit as st
 from dotenv import load_dotenv
 
 load_dotenv()
-API_URL = st.secrets.get("API_URL", os.getenv("API_URL", "http://127.0.0.1:8000"))
+if "OPENAI_API_KEY" in st.secrets:
+    os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+
+from app_service import execute_query, register_new_patient
 
 
 st.set_page_config(page_title="Doctor Appointment System", page_icon=":hospital:", layout="wide")
@@ -126,24 +128,27 @@ def reset_chat():
 
 
 def submit_query(query: str):
-    payload = {"messages": query}
     if st.session_state.patient_registered and st.session_state.patient_id:
-        payload["id_number"] = int(st.session_state.patient_id)
-        payload["is_new_patient"] = False
+        result = execute_query(
+            id_number=int(st.session_state.patient_id),
+            message=query,
+            is_new_patient=False,
+        )
     elif st.session_state.patient_mode == "New Patient":
-        payload["is_new_patient"] = True
-        payload["full_name"] = st.session_state.patient_name
-        payload["phone"] = st.session_state.patient_phone
+        result = execute_query(
+            id_number=None,
+            message=query,
+            is_new_patient=True,
+            full_name=st.session_state.patient_name,
+            phone=st.session_state.patient_phone,
+        )
     else:
-        payload["id_number"] = int(st.session_state.patient_id) if str(st.session_state.patient_id).isdigit() else None
-        payload["is_new_patient"] = False
+        result = execute_query(
+            id_number=int(st.session_state.patient_id) if str(st.session_state.patient_id).isdigit() else None,
+            message=query,
+            is_new_patient=False,
+        )
 
-    response = requests.post(f"{API_URL}/execute", json=payload, timeout=30)
-    if response.status_code != 200:
-        detail = response.json().get("detail", "Could not process the request.")
-        raise RuntimeError(detail)
-
-    result = response.json()
     patient = result.get("patient", {}) or {}
     if patient:
         st.session_state.patient_id = str(patient.get("patient_id", ""))
@@ -169,20 +174,10 @@ def proceed_patient_setup():
         return
 
     try:
-        response = requests.post(
-            f"{API_URL}/patients/register",
-            json={
-                "full_name": st.session_state.patient_name,
-                "phone": st.session_state.patient_phone,
-            },
-            timeout=30,
+        patient = register_new_patient(
+            st.session_state.patient_name,
+            st.session_state.patient_phone,
         )
-        if response.status_code != 200:
-            detail = response.json().get("detail", "Could not register patient.")
-            st.error(detail)
-            return
-
-        patient = response.json().get("patient", {}) or {}
         st.session_state.patient_id = str(patient.get("patient_id", ""))
         st.session_state.patient_name = patient.get("full_name", st.session_state.patient_name)
         st.session_state.patient_phone = patient.get("phone", st.session_state.patient_phone)
